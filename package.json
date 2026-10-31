@@ -1,0 +1,9 @@
+{
+  "name": "azentio-ai-portal",
+  "version": "1.0.0",
+  "description": "azentio.ai public website + governed employee/client collaboration portal",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}

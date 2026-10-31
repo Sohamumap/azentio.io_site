@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>azentio.ai | Build Intelligence. Create Impact.</title>
+<meta name="description" content="Applied AI products, intelligent decisioning and a governed collaboration portal for Azentio employees and clients." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a href="#/" class="logo" aria-label="azentio.ai home"><span class="g">a</span>zent<span class="g">i</span>o<span class="g">.ai</span></a>
+  <nav id="navlinks"></nav>
+  <div class="nav-right" id="navright"></div>
+  <button class="burger" id="burger" aria-label="Menu">☰</button>
+</header>
+<main id="main"></main>
+<button id="aira-btn" class="aira-fab" aria-label="Ask AIRA">✦ Ask AIRA</button>
+<aside id="aira" class="aira hidden" aria-label="AIRA assistant">
+  <div class="aira-head"><strong>AIRA</strong><span class="muted small">answers only from approved sources</span><button id="aira-close" aria-label="Close">×</button></div>
+  <div id="aira-log" class="aira-log"><div class="msg bot">Hi, I'm AIRA. Ask about our products or approved shared learning. I cite every source.</div></div>
+  <form id="aira-form"><input id="aira-q" placeholder="e.g. How do seasonal SMEs affect analysis?" maxlength="500" /><button class="btn">Ask</button></form>
+</aside>
+<footer class="foot">
+  <div><span class="logo small"><span class="g">a</span>zent<span class="g">i</span>o<span class="g">.ai</span></span><p class="muted">Build intelligence. Create shared value.</p></div>
+  <div><strong>Solutions</strong><a href="#/az/banking">Banking</a><a href="#/az/insurance">Insurance</a><a href="#/az/risk-compliance">Risk & Compliance</a><a href="#/az/capital-markets">Capital Markets</a><a href="#/az/erp">ERP</a><a href="#/products">AI Products</a></div>
+  <div><strong>Company</strong><a href="#/az/about-azentio">About</a><a href="#/az/our-leadership">Leadership</a><a href="#/az/careers">Careers</a><a href="#/az/insights">Insights</a><a href="#/media">Media</a><a href="#/hackathon">Build Labs</a><a href="#/connect">Request demo</a><a href="#/login">Portal sign-in</a></div>
+  <p class="muted small fine">All demo data is synthetic. Sandbox outputs are simulations, not credit or business decisions.</p>
+</footer>
+<div id="toast" class="toast hidden"></div>
+<div class="brand-strip" aria-hidden="true"></div>
+<script src="/app.js"></script>
+</body>
+</html>
