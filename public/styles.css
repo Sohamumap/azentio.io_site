@@ -247,3 +247,8 @@ th { color:var(--muted); font-weight:600; font-size:.78rem; text-transform:upper
 #navlinks a:hover, #navlinks a.on { opacity:1; }
 .logos-label { position:relative; z-index:2; background:var(--bg); padding-right:16px; box-shadow:16px 0 16px var(--bg); }
 .tile .ph img, .xhero-media .ph img { object-position:70% center; }
+/* Customer Hub link added to the top nav: keep it on one line on laptop widths */
+#navlinks { gap:0; flex-wrap:nowrap; }
+@media (max-width:1440px) { #navlinks a { padding:7px 7px; font-size:.82rem; } .nav { gap:16px; } }
+@media (max-width:1180px) { #navlinks { flex-wrap:wrap; } }
+.nav .btn { white-space:nowrap; }

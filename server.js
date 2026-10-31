@@ -144,7 +144,9 @@ function sharedView(s) {
     feedback: { useful: s.feedback.useful.length, needsEvidence: s.feedback.needsEvidence.length },
   };
 }
-const sharedVisibleTo = (ctx) => (ctx && (activeOrg(ctx) || isEmployee(ctx.user)) ? db.shared.filter((s) => s.active) : []);
+// Moderated, de-identified shared copies are the public face of collective learning: anyone may read them.
+// Writing (contributing, feedback, reports) still needs a signed-in client or employee.
+const sharedVisibleTo = () => db.shared.filter((s) => s.active);
 
 function themes(ctx) {
   const groups = {};
@@ -358,9 +360,9 @@ route('POST', '/api/employee/knowledge/:id/feedback', (ctx, b, req, res, p) => {
 
 // Playground (sandbox; synthetic data, deterministic scoring)
 route('POST', '/api/playground/run', (ctx, b) => {
-  requireAuth(ctx);
+  // Visitors can try every sandbox on synthetic data; signed-in clients are limited to their entitlements.
   const product = db.products.find((p) => p.slug === b.product) || notFound();
-  if (!isEmployee(ctx.user) && !entitled(ctx, product.slug)) deny('Your organisation is not entitled to this sandbox');
+  if (ctx && !isEmployee(ctx.user) && !entitled(ctx, product.slug)) deny('Your organisation is not entitled to this sandbox');
   const scenario = db.scenarios.find((s) => s.id === b.scenario && s.product === product.slug) || notFound();
   const i = scenario.inputs;
   const dscr = i.netOperatingIncome / i.debtService;
@@ -376,14 +378,13 @@ route('POST', '/api/playground/run', (ctx, b) => {
     id: id('run'), at: now(), product: product.name, scenario: scenario.name,
     output: pos >= 3 ? 'Simulated: within indicative policy' : pos === 2 ? 'Simulated: refer for analyst review' : 'Simulated: outside indicative policy',
     evidence, label: 'SANDBOX — synthetic data. Simulated output, not a credit or business decision.',
-    tenant: isEmployee(ctx.user) ? 'internal' : activeOrg(ctx), userId: ctx.user.id,
+    tenant: !ctx ? 'public' : isEmployee(ctx.user) ? 'internal' : activeOrg(ctx), userId: ctx ? ctx.user.id : null,
   };
-  db.runs.unshift(run); return run;
+  db.runs.unshift(run); db.runs.length = Math.min(db.runs.length, 500); return run;
 });
 route('GET', '/api/playground/scenarios', (ctx) => {
-  requireAuth(ctx);
-  const allowed = db.products.filter((p) => isEmployee(ctx.user) || entitled(ctx, p.slug)).map((p) => p.slug);
-  return { products: db.products.filter((p) => allowed.includes(p.slug)), scenarios: db.scenarios.filter((s) => allowed.includes(s.product)), runs: db.runs.filter((r) => r.userId === ctx.user.id).slice(0, 10) };
+  const allowed = db.products.filter((p) => !ctx || isEmployee(ctx.user) || entitled(ctx, p.slug)).map((p) => p.slug);
+  return { products: db.products.filter((p) => allowed.includes(p.slug) && db.scenarios.some((s) => s.product === p.slug)), scenarios: db.scenarios.filter((s) => allowed.includes(s.product)), runs: ctx ? db.runs.filter((r) => r.userId === ctx.user.id).slice(0, 10) : [] };
 });
 route('POST', '/api/playground/feedback', (ctx, b) => {
   const u = requireAuth(ctx);
@@ -488,7 +489,6 @@ route('POST', '/api/contributions/:id/visibility', (ctx, b, req, res, p) => {
 
 // Shared learning feed & search (same visibility rules for counts, suggestions and export)
 function searchShared(ctx, query) {
-  if (!ctx || !(activeOrg(ctx) || isEmployee(ctx.user))) throw new HttpError(401, 'Sign in to a workspace to view shared learning');
   const q = (query.get('q') || '').toLowerCase();
   const f = (k) => query.get(k) || '';
   return sharedVisibleTo(ctx).filter((s) =>
@@ -521,7 +521,7 @@ route('POST', '/api/shared/:id/report', (ctx, b, req, res, p) => {
   db.users.filter((x) => has(x, 'moderator')).forEach((m) => notify(m.id, `Report on shared item “${s.title}”`, '#/moderation'));
   audit(u, 'shared.reported', s.id); return { ok: true };
 });
-route('GET', '/api/themes', (ctx) => { if (!ctx || !(activeOrg(ctx) || isEmployee(ctx.user))) throw new HttpError(401, 'Sign in'); return { minCohort: MIN_COHORT, themes: themes(ctx) }; });
+route('GET', '/api/themes', (ctx) => ({ minCohort: MIN_COHORT, themes: themes(ctx) }));
 route('POST', '/api/aira', async (ctx, b) => aira(ctx, b.question));
 
 // Moderation
@@ -572,7 +572,7 @@ route('POST', '/api/moderation/reports/:id/:action', (ctx, b, req, res, p) => {
 
 // Improvement ideas
 route('GET', '/api/ideas', (ctx) => {
-  requireAuth(ctx);
+  if (!ctx) return db.ideas.filter((i) => i.shared).map(ideaPublic);
   if (has(ctx.user, 'product_owner')) return db.ideas;
   if (isEmployee(ctx.user)) return db.ideas.map(ideaPublic);
   requireTenant(ctx); return db.ideas.filter((i) => i.shared).map(ideaPublic);

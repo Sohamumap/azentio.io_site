@@ -24,7 +24,7 @@ const productName = (slug) => SITE?.products.find((p) => p.slug === slug)?.name 
 
 // ---------- chrome ----------
 function renderNav() {
-  const pub = [...INDUSTRIES.map(([p, l]) => ['#/az' + p, l]), ['#/products', 'AI Products'], ['#/az/insights', 'Insights'], ['#/company', 'Company'], ['#/hackathon', 'Build Labs']];
+  const pub = [...INDUSTRIES.map(([p, l]) => ['#/az' + p, l]), ['#/products', 'AI Products'], ['#/customers', 'Customer Hub'], ['#/az/insights', 'Insights'], ['#/company', 'Company'], ['#/hackathon', 'Build Labs']];
   $('#navlinks').innerHTML = pub.map(([h, l]) => `<a href="${h}" class="${location.hash.startsWith(h) ? 'on' : ''}">${l}</a>`).join('');
   $('#navright').innerHTML = ME.user
     ? `<a class="btn sm ghost" href="${isEmp() ? '#/employee' : '#/client'}">Portal${ME.unread ? ` · ${ME.unread}` : ''}</a><button class="btn sm dark" id="logout">Sign out</button>`
@@ -55,7 +55,7 @@ const pages = {
         <div class="eyebrow light">Banking · Insurance · Capital Markets · ERP · AI</div>
         <h1>Transformative technology.<br><span class="g">Built with intelligence.</span></h1>
         <p class="lead">${esc(azPage('/')?.sections?.[0]?.items?.[0]?.x || '')}</p>
-        <div class="cta"><a class="btn" href="#/connect">Book a demo</a><a class="btn outline-light" href="#/products">Explore AI products</a></div>
+        <div class="cta"><a class="btn" href="#/connect">Book a demo</a><a class="btn outline-light" href="#/customers">Customer Hub</a></div>
       </div>
       <div class="xhero-media">
         <div class="ph tall">${IMG(MEDIA.pages['/banking']?.hero, 'Azentio banking')}</div>
@@ -67,6 +67,7 @@ const pages = {
     <div class="logos"><span class="logos-label">Trusted by industry leaders</span><div class="logos-track">${[...MEDIA.logos, ...MEDIA.logos].map((l) => `<span class="logo-chip">${IMG(l.s, l.a)}</span>`).join('')}</div></div>
     <section><div class="head-row"><div><div class="eyebrow">World class technology. Regional passion.</div><h2>Purpose-built platforms for every part of financial services.</h2></div><p class="muted">${esc(azPage('/')?.sections?.[1]?.items?.[0]?.x || '')}</p></div>
       <div class="tiles">${INDUSTRIES.map(([p, l], i) => `<a class="tile ${i === 0 ? 'big' : ''}" href="#/az${p}"><div class="ph">${IMG(MEDIA.pages[p]?.hero, l)}</div><div class="tile-copy"><span class="chip">${CONTENT.filter((c) => c.path.startsWith(p + '/')).length} solutions</span><h3>${l}</h3><p>${esc(ind[p])}</p><span class="more">Explore ${l} →</span></div></a>`).join('')}</div></section>
+    ${hubBand()}
     <div class="statband"><div class="statband-in"><div><div class="eyebrow light">Transforming technology every day</div><h2>Proven impact across the Middle East, Africa and South East Asia.</h2></div><div class="stats">${MEDIA.stats.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div></div></div>
     <section><div class="head-row"><div><div class="eyebrow">Awards</div><h2>We're proud to be winners.</h2></div><a class="link" href="#/az/insights/awards-and-analyst-reports">All awards & analyst reports →</a></div>
       <div class="cards3">${awards.map(insightCard).join('')}</div></section>
@@ -79,12 +80,22 @@ const pages = {
     <section class="split rev"><div class="ph rounded">${IMG(MEDIA.pages['/careers']?.hero, 'Careers at Azentio')}</div><div><div class="eyebrow">Committed to innovation</div><h2>Join our journey.</h2><p class="muted">We foster a culture of excellence, collaboration and innovation, where 1,900+ technology professionals build software trusted by financial institutions worldwide.</p><div class="cta"><a class="btn dark" href="#/az/careers">Careers at Azentio</a><a class="btn ghost" href="#/az/about-azentio">About us</a></div></div></section>
     ${ctaBand()}`;
   },
+  async customers() {
+    const [sh, th, ideas] = await Promise.all([api('/api/shared'), api('/api/themes'), api('/api/ideas')]);
+    const steps = [['Explore', 'Browse products, sandbox demos, shared learning and themes. No account needed.'], ['Ask AIRA', 'Get cited answers from approved Azentio material, any time.'], ['Request a demo', 'Tell us what you need and our team walks you through it.'], ['Join your workspace', 'Clients are invited into a private organisation workspace.'], ['Contribute', 'Share market observations privately first; nothing leaves your organisation without your choice and moderation.'], ['See the impact', 'Follow themes and improvement status as your feedback shapes the products.']];
+    return portalShell('#/customers', `<div class="eyebrow">Customer Hub</div><h1>What you get as an Azentio customer</h1><p class="lead">Everything customers see and use is open here: try the AI products in a sandbox, read what other institutions are learning, follow how feedback becomes product improvements, and ask AIRA anything.</p>
+    <div class="grid" style="margin-top:20px">${HUB.slice(1).map(([h, l], i) => `<a class="card" href="${h}" style="text-decoration:none"><h3>${l} →</h3><p class="muted small">${[`${SITE.products.length} AI products with guided scenarios on synthetic data.`, `${sh.count} moderated, de-identified observations from client institutions.`, `${th.themes.length} recurring theme${th.themes.length === 1 ? '' : 's'}, with small cohorts suppressed for privacy.`, `${ideas.length} product improvement${ideas.length === 1 ? '' : 's'} and where ${ideas.length === 1 ? 'it stands' : 'each one stands'}.`][i]}</p></a>`).join('')}<button class="card" data-openaira style="text-align:left;cursor:pointer;font:inherit"><h3>Ask AIRA →</h3><p class="muted small">AI assistant answering from approved Azentio sources, with citations.</p></button></div>
+    <h2 style="margin-top:36px">How customers interact with us</h2><div class="grid">${steps.map(([t, d], i) => `<div class="card flat"><span class="tag lime">${i + 1}</span><h3>${t}</h3><p class="muted small">${d}</p></div>`).join('')}</div>
+    <h2 style="margin-top:36px">Latest from the learning community</h2><div class="grid two">${sh.items.slice(0, 4).map((x) => `<div class="card"><span class="tag">${esc(x.theme)}</span><span class="tag navy">${esc(productName(x.offering))}</span><h3>${esc(x.title)}</h3><p class="small">${esc(x.summary)}</p><p class="muted small">${esc(x.industry)} · ${esc(x.region)} · ${esc(x.period)}</p></div>`).join('') || '<p class="muted">No shared observations yet.</p>'}</div><p><a href="#/learning">See all shared learning →</a></p>
+    ${SITE.media.length ? `<h2 style="margin-top:36px">Watch</h2><div class="grid">${SITE.media.map((m) => `<div class="card"><div class="video">▶</div><span class="tag">${esc(m.kind)}</span><span class="tag navy">${esc(m.duration)}</span><h3>${esc(m.title)}</h3><p class="muted small">${esc(m.description)}</p></div>`).join('')}</div>` : ''}
+    <div class="notice" style="margin-top:28px">Private client workspaces, unpublished observations and internal employee material stay behind sign-in. <a href="#/connect">Request a demo</a> or <a href="#/login">sign in</a>.</div>`);
+  },
   products() { return `<section><div class="eyebrow">Product catalogue</div><h1>Products</h1><p class="lead">Applied AI products for lenders, banks and financial institutions.</p><div class="grid">${SITE.products.map(productCard).join('')}</div></section>`; },
   product(slug) {
     const p = SITE.products.find((x) => x.slug === slug); if (!p) return pages.notfound();
     return `<section><a href="#/products" class="muted small">← All products</a><div class="eyebrow">${esc(p.category)}</div><h1>${esc(p.name)}</h1><p class="lead">${esc(p.description)}</p>
     <div class="grid">${p.features.map((f) => `<div class="card flat"><h3>✦ ${esc(f)}</h3></div>`).join('')}</div>
-    <div class="row" style="margin-top:24px;max-width:520px"><a class="btn" href="#/connect?product=${p.slug}">Request a demo</a><a class="btn ghost" href="#/login">Try in the sandbox (sign in)</a></div></section>`;
+    <div class="row" style="margin-top:24px;max-width:520px"><a class="btn" href="#/connect?product=${p.slug}">Request a demo</a><a class="btn ghost" href="#/playground">Try it in the sandbox</a></div></section>`;
   },
   solutions() {
     const sol = [['Banks', 'SME lending, policy simulation, regulatory reporting', ['sme-credit-decisioning', 'credit-strategy-simulator', 'riva']], ['Microfinance', 'Fast, explainable small-business analysis', ['financial-analysis-intelligence', 'document-intelligence']], ['Trade & supply-chain finance', 'Portfolio context for every application', ['similar-portfolio-intelligence', 'document-intelligence']]];
@@ -159,8 +170,16 @@ function groupItems(items) { const out = []; let cur = null; for (const it of it
 function relTo(path, x) { const key = { '/banking': /bank|lend|imal|islamic/i, '/insurance': /insur|qiic|claims/i, '/risk-compliance': /aml|sanction|kyc|risk|compliance|fraud/i, '/capital-markets': /wealth|capital|pnb|mfund/i, '/erp': /erp|invoic|enterprises|printing/i }; const k = Object.keys(key).find((p) => path.startsWith(p)); return k ? key[k].test(x.t + ' ' + x.p) : false; }
 const productCard = (p) => `<div class="card"><div class="eyebrow">${esc(p.category)}</div><h3>${esc(p.name)}</h3><p class="muted small">${esc(p.tagline)}</p><a class="btn sm ghost" href="#/products/${p.slug}">Explore product</a></div>`;
 
+const hubBand = () => `<section><div class="head-row"><div><div class="eyebrow">Customer Hub · open to everyone</div><h2>See what our customers get.</h2></div><a class="link" href="#/customers">Open the Customer Hub →</a></div>
+  <div class="grid">${[['#/playground', 'Try the sandbox', 'Run our AI products on synthetic scenarios, right in your browser.'], ['#/learning', 'Shared learning', 'Moderated, de-identified observations from client institutions.'], ['#/themes', 'Theme dashboard', 'Recurring themes across clients, with privacy thresholds.'], ['#/ideas', 'Improvement status', 'How customer feedback turns into product improvements.']].map(([h, t, d]) => `<a class="card" href="${h}" style="text-decoration:none"><h3>${t} →</h3><p class="muted small">${d}</p></a>`).join('')}</div></section>`;
+
 // ---------- portal ----------
+const HUB = [['#/customers', 'Customer Hub'], ['#/playground', 'Try the sandbox'], ['#/learning', 'Shared learning'], ['#/themes', 'Theme dashboard'], ['#/ideas', 'Improvement status']];
 function portalShell(active, body) {
+  if (!ME.user) {
+    return `<div class="portal"><nav class="side"><div class="label">Customer Hub</div>${HUB.map(([h, l]) => `<a href="${h}" class="${h === active ? 'on' : ''}">${l}</a>`).join('')}<div class="label">Go further</div><a href="#/connect">Request a demo</a><a href="#/login">Client sign in</a></nav>
+  <div class="content"><div class="ws"><span>Open to everyone, no sign-in needed. Clients sign in to contribute observations and see their organisation's workspace.</span></div>${body}</div></div>`;
+  }
   const ws = ME.memberships || [];
   const links = [];
   if (isEmp()) {
@@ -192,7 +211,7 @@ const portal = {
     const d = await api('/api/playground/scenarios');
     return portalShell('#/playground', `<h1>${isEmp() ? 'Playground' : 'Sandbox demonstrations'}</h1><div class="notice"><b>Sandbox.</b> Synthetic data only. Outputs are simulated and are not credit or business decisions.</div>
     ${d.products.length ? `<form class="card stack" id="pgform"><div class="row"><label>1 · Offering<select name="product" id="pgprod">${d.products.map((p) => `<option value="${p.slug}">${esc(p.name)}</option>`).join('')}</select></label><label>2 · Scenario<select name="scenario" id="pgscen"></select></label></div><div id="pginputs"></div><button class="btn">3 · Run demonstration</button></form><div id="pgout"></div>` : '<div class="card flat"><h3>No sandbox entitlements yet</h3><p class="muted">Your organisation has no entitled offerings. Ask your client administrator or Azentio account team.</p></div>'}
-    <h3 style="margin-top:24px">Your recent runs</h3>${d.runs.length ? d.runs.map((r) => `<p class="small">${fmt(r.at)} · ${esc(r.product)} · ${esc(r.scenario)} → <b>${esc(r.output)}</b></p>`).join('') : '<p class="muted small">No runs yet.</p>'}`, d);
+    ${ME.user ? `<h3 style="margin-top:24px">Your recent runs</h3>${d.runs.length ? d.runs.map((r) => `<p class="small">${fmt(r.at)} · ${esc(r.product)} · ${esc(r.scenario)} → <b>${esc(r.output)}</b></p>`).join('') : '<p class="muted small">No runs yet.</p>'}` : ''}`, d);
   },
   async broadcasts() {
     const d = await api('/api/employee/dashboard');
@@ -210,7 +229,7 @@ const portal = {
     const sel = (k, vals) => `<label>${k}<select name="${k}"><option value="">All</option>${vals.map((v) => `<option ${q.get(k) === v ? 'selected' : ''} value="${esc(v)}">${esc(k === 'offering' ? productName(v) : v)}</option>`).join('')}</select></label>`;
     return portalShell('#/learning', `<h1>Shared learning</h1><div class="notice green">Cross-client feed: only <b>moderated, de-identified</b> copies approved for the learning community. Private and organisation-only content never appears here.</div>
     <form class="card stack" id="searchform"><div class="row"><label>Search<input name="q" value="${esc(q.get('q') || '')}" placeholder="e.g. seasonal"></label>${sel('offering', d.facets.offering)}${sel('industry', d.facets.industry)}</div><div class="row">${sel('region', d.facets.region)}${sel('period', d.facets.period)}${sel('topic', d.facets.topic)}</div><div class="row"><button class="btn">Search</button><a class="btn ghost" href="/api/shared/export.csv?${esc(q.toString())}">Export CSV</a><a class="btn ghost" href="#/learning">Clear</a></div></form>
-    <p class="muted small">${d.count} result(s)</p><div class="grid two">${d.items.map((s) => `<div class="card"><span class="tag">${esc(s.theme)}</span><span class="tag navy">${esc(productName(s.offering))}</span><span class="tag amber">${esc(s.confidence)} confidence</span><h3>${esc(s.title)}</h3><p>${esc(s.summary)}</p><p class="muted small">${esc(s.industry)} · ${esc(s.region)} · ${esc(s.period)} · ${esc(s.evidenceType)} · ${esc(s.attribution)} · v${s.version}</p><div class="row"><button class="btn sm ghost" data-fb="${s.id}" data-kind="useful">👍 Useful (${s.feedback.useful})</button><button class="btn sm ghost" data-fb="${s.id}" data-kind="needsEvidence">Needs evidence (${s.feedback.needsEvidence})</button><button class="btn sm ghost" data-report="${s.id}">Report</button></div></div>`).join('') || '<p class="muted">No approved shared observations match.</p>'}</div>`);
+    <p class="muted small">${d.count} result(s)</p><div class="grid two">${d.items.map((s) => `<div class="card"><span class="tag">${esc(s.theme)}</span><span class="tag navy">${esc(productName(s.offering))}</span><span class="tag amber">${esc(s.confidence)} confidence</span><h3>${esc(s.title)}</h3><p>${esc(s.summary)}</p><p class="muted small">${esc(s.industry)} · ${esc(s.region)} · ${esc(s.period)} · ${esc(s.evidenceType)} · ${esc(s.attribution)} · v${s.version}</p>${ME.user ? `<div class="row"><button class="btn sm ghost" data-fb="${s.id}" data-kind="useful">👍 Useful (${s.feedback.useful})</button><button class="btn sm ghost" data-fb="${s.id}" data-kind="needsEvidence">Needs evidence (${s.feedback.needsEvidence})</button><button class="btn sm ghost" data-report="${s.id}">Report</button></div>` : `<p class="small">👍 ${s.feedback.useful} found this useful · <a href="#/login">Sign in to give feedback</a></p>`}</div>`).join('') || '<p class="muted">No approved shared observations match.</p>'}</div>`);
   },
   async themes() {
     const d = await api('/api/themes');
@@ -314,7 +333,7 @@ async function router() {
     ME = await api('/api/me');
     renderNav();
     let html;
-    const needAuth = ['employee', 'playground', 'broadcasts', 'knowledge', 'learning', 'themes', 'ideas', 'moderation', 'publisher', 'admin', 'fl', 'client', 'notifications'];
+    const needAuth = ['employee', 'broadcasts', 'knowledge', 'moderation', 'publisher', 'admin', 'fl', 'client', 'notifications'];
     if (needAuth.includes(parts[0]) && !ME.user) { location.hash = '#/login'; return; }
     if (ME.user && !ME.termsAccepted && parts[0] !== 'invite') { /* seeded users already accepted */ }
     switch (parts[0]) {
@@ -353,7 +372,7 @@ function bind() {
     prod.onchange = run(fill); $('#pgscen').onchange = run(async () => showInputs(await api('/api/playground/scenarios'))); fill();
     on('#pgform', 'submit', async (e, f) => { e.preventDefault(); const r = await api('/api/playground/run', formData(f));
       $('#pgout').innerHTML = `<div class="card sandbox" style="margin-top:16px"><div class="tag amber">${esc(r.label)}</div><h2>${esc(r.output)}</h2><table><tr><th>Evidence</th><th>Value</th><th>Effect</th></tr>${r.evidence.map((x) => `<tr><td>${esc(x.factor)}</td><td>${esc(x.value)}</td><td>${esc(x.effect)}</td></tr>`).join('')}</table>
-      <form class="row" id="pgfb" style="margin-top:12px"><select name="rating"><option>Helpful</option><option>Unclear evidence</option><option>Incorrect</option></select><input name="comment" placeholder="Structured feedback (optional)"><button class="btn sm">Send feedback</button></form></div>`;
+      ${ME.user ? '' : '<p class="small" style="margin-top:12px">Like what you see? <a href="#/connect">Request a demo</a> to try it with your own team.</p>'}<form class="row" id="pgfb" style="margin-top:12px${ME.user ? '' : ';display:none'}"><select name="rating"><option>Helpful</option><option>Unclear evidence</option><option>Incorrect</option></select><input name="comment" placeholder="Structured feedback (optional)"><button class="btn sm">Send feedback</button></form></div>`;
       on('#pgfb', 'submit', async (e2, f2) => { e2.preventDefault(); await api('/api/playground/feedback', { ...formData(f2), runId: r.id }); toast('Feedback recorded'); });
     });
   }
@@ -382,6 +401,7 @@ function bind() {
 
 // ---------- AIRA ----------
 $('#aira-btn').onclick = () => $('#aira').classList.toggle('hidden');
+document.addEventListener('click', (e) => { if (e.target.closest('[data-openaira]')) { $('#aira').classList.remove('hidden'); $('#aira-q')?.focus(); } });
 $('#aira-close').onclick = () => $('#aira').classList.add('hidden');
 $('#aira-form').onsubmit = run(async (e) => {
   e.preventDefault(); const q = $('#aira-q').value.trim(); if (!q) return;
