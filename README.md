@@ -1,6 +1,11 @@
 # azentio.ai — Website & Intelligent Collaboration Portal
 
-Hackathon build for Problem Statement 7. Zero dependencies: Node 18+ only.
+Hackathon build for Azentio Build Labs, Problem Statement 7. Zero dependencies: Node 18+ only.
+
+**Live demo:** https://azentio-ai.narrator-systems.workers.dev (Cloudflare Workers)
+Demo password for every seeded account: `demo1234`. For example, use `priya@azentio.com` (employee), `lena@azentio.com` (moderator), `admin@azentio.com` (admin) or `sara@gulfhorizon.example` (client admin). All demo data is synthetic.
+
+![Home](docs/home.png)
 
 ## Run locally
 ```
